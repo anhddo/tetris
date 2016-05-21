@@ -39,13 +39,26 @@ public class LogicTest
         var result = calc(currentState, inputType, new Vector2(0,0));
         Assert.AreEqual(expected, result);
     }
-
+    public int[,] getArray(int type)
+    {
+        if(type== L)
+        {
+            return new int[,] { { 1 }, { 1 }, { 1 }, { 1 } };
+        }else if(type== SQUARE)
+        {
+            return new int[,] { { 1, 1 }, { 1, 1 } };
+        }
+        return null;
+    }
+    int[] getBottom(int[,] block)
+    {
+        var rows = block.GetLength(0);
+        var cols = block.GetLength(1);
+        return null;
+    }
     private int[,] calc(int[,] currentState, int inputType, Vector2 position)
     {
-        int[,] result = { {1,0,0},
-                               {1,0,0},
-                               {1,0,0},
-                               {1,0,0}};
-        return result;
+        var block = getArray(inputType);
+        return null;
     }
 }
