@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
-
-public class CubeInfo : MonoBehaviour {
-    public Vector2 index;
-    public CubeInfo(Vector2 v)
+public class CubeIndex
+{
+    public int row, col;
+    public CubeIndex(int r, int c)
     {
-        index = v;
+        row = r; col = c;
     }
+}
+public class CubeInfo : MonoBehaviour
+{
+    public CubeIndex index;
 }
