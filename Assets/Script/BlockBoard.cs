@@ -19,7 +19,7 @@ public class BlockBoard : MonoBehaviour
     }
     public int getHighestCubeInCol(int col)
     {
-        int maxHeight = Int32.MinValue;
+        int maxHeight = 0;
         foreach (var cube in cubes)
         {
             if (cube.index.col == col && maxHeight < cube.index.row)

@@ -93,6 +93,7 @@ public class Block : MonoBehaviour
         }
         //
         stopIndex = new CubeIndex(minIndex.row + minDistance, 0);
+        Debug.Log(stopIndex);
     }
     public CubeIndex getLowestCubeIndexInRow(int col)
     {
@@ -140,14 +141,13 @@ public class Block : MonoBehaviour
     {
         if (!stopFalling())
         {
-            anchor.row++;
+            anchor.row--;
             gameObject.transform.position -= Vector3.up;
+            Debug.Log(anchor.row);
         }
     }
     void Update()
     {
-        Debug.Log(Time.time);
-        Debug.Log(currentTime+deltaTime);
         if (Time.time > currentTime + deltaTime)
         {
             currentTime = Time.time;
