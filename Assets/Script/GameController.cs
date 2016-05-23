@@ -1,24 +1,46 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GameController : MonoBehaviour {
-    public  BlockBoard blockBoard;
-    public Block blockPrefabs;
-    public int initHeight;
+public class GameController : MonoBehaviour
+{
+    public BlockBoard blockBoard;
+    public float keyPressTimeDelay;
+    private float currentTime;
 
     // Use this for initialization
-    void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        if ( Input.GetKeyDown(KeyCode.Space) )
+    void Start()
+    {
+        currentTime = 0;
+    }
+
+    // Update is called once per frame
+    void keyHandling()
+    {
+        if (Input.anyKey && Time.time > currentTime + keyPressTimeDelay)
         {
-            Block block = Instantiate(blockPrefabs, Vector3.zero, Quaternion.identity) as Block;
-            block.Anchor = new CubeIndex(initHeight, 3);
-            blockBoard.addBlockToBoard(block);
+            currentTime = Time.time;
+            if (Input.GetKey(KeyCode.DownArrow))
+            {
+                blockBoard.moveBlockToTheGround();
+            }
+            else if (Input.GetKey(KeyCode.UpArrow))
+            {
+                blockBoard.rotateBlock();
+            }
+            else if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                blockBoard.moveFallingBlock("Left");
+            }
+            else if (Input.GetKey(KeyCode.RightArrow))
+            {
+                blockBoard.moveFallingBlock("Right");
+            }
         }
-	
-	}
+    }
+    void Update()
+    {
+        blockBoard.addRandomBLock();
+        keyHandling();
+
+    }
 }

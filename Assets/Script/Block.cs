@@ -20,6 +20,13 @@ public class Block : MonoBehaviour
         }
     }
 
+    private BlockBoard blockBoard;
+
+    public void setReferenceBLockBoard(BlockBoard blockBoard)
+    {
+        this.blockBoard = blockBoard;
+    }
+
     CubeIndex anchor;
 
     public int getWidth()
@@ -41,7 +48,23 @@ public class Block : MonoBehaviour
     {
         return cubes;
     }
-    void rotate()
+    public void rotate()
+    {
+        foreach (var cube in cubes)
+        {
+            cube.index = new CubeIndex(cube.index.col, height - 1 - cube.index.row);
+        }
+
+        var temp = width;
+        width = height;
+        height = temp;
+
+        calcStopPosition();
+    }
+
+
+
+    void changeCubeIndex()
     {
 
     }
@@ -119,16 +142,29 @@ public class Block : MonoBehaviour
         }
         return result;
     }
-
-    public void calcStopPosition(List<int> highestCols)
+    public void move(string v)
     {
-        if (highestCols.Count == 0)
+        if (v.Equals("Left"))
+        {
+            Anchor = new CubeIndex(anchor.row, anchor.col - 1);
+        }
+        else if (v.Equals("Right"))
+        {
+            Anchor = new CubeIndex(anchor.row, anchor.col + 1);
+        }
+        calcStopPosition();
+    }
+    public void calcStopPosition()
+    {
+        List<int> cols = getListBlockCols();
+        List<int> highestColsInBoard = blockBoard.getHighestCubeInCols(cols);
+        if (highestColsInBoard.Count == 0)
         {
             throw new Exception("highest cols is zero");
         }
         int i = 0;
         int minDistance = Int32.MaxValue; CubeIndex minIndex = null; int stopRow = 0;
-        foreach (var highestPos in highestCols)
+        foreach (var highestPos in highestColsInBoard)
         {
             CubeIndex index = getLowestCubeIndexInRow(i);
             int row = anchor.row + index.row;
@@ -142,7 +178,7 @@ public class Block : MonoBehaviour
             i++;
         }
         //
-        stopIndex = new CubeIndex(stopRow , anchor.col);
+        stopIndex = new CubeIndex(stopRow, anchor.col);
     }
     public CubeIndex getLowestCubeIndexInRow(int col)
     {
@@ -180,8 +216,15 @@ public class Block : MonoBehaviour
     void Awake()
     {
         cubes = new List<CubeInfo>();
-        initBLock();
         currentTime = 0.0f;
+        initTypeRandom();
+        initBLock();
+    }
+
+    public void initTypeRandom()
+    {
+        var array = Enum.GetValues(typeof(BLOCKTYPE));
+        type = (BLOCKTYPE)array.GetValue(UnityEngine.Random.Range(0, array.Length - 1));
     }
 
     // Update is called once per frame
