@@ -17,6 +17,7 @@ public class BlockBoard : MonoBehaviour
         isFalling = false;
         currentBlock = null;
     }
+
     public int getHighestCubeInCol(int col)
     {
         int maxHeight = 0;
@@ -47,21 +48,22 @@ public class BlockBoard : MonoBehaviour
             List<int> highests = getHighestCubeInCols(cols);
             block.calcStopPosition(highests);
         }
-        else
-        {
-            CubeIndex stopIndex = block.getStopIndex();
-            List<CubeInfo> blockCubes = block.getCubes();
-            foreach (var blockCube in blockCubes)
-            {
-                blockCube.index = new CubeIndex(stopIndex.row + blockCube.index.row, stopIndex.col + blockCube.index.col);
-            }
-        }
     }
     void Update()
     {
-        if (currentBlock!=null && currentBlock.stopFalling())
+        if (currentBlock != null && currentBlock.stopFalling())
         {
             isFalling = false;
+
+            CubeIndex stopIndex= currentBlock.getStopIndex();
+            List<CubeInfo> blockCubes = currentBlock.getCubes();
+            foreach (var blockCube in blockCubes)
+            {
+                blockCube.index.row += stopIndex.row; blockCube.index.col += stopIndex.col;
+                cubes.Add(blockCube);
+            }
+            currentBlock.transform.DetachChildren();
+            Destroy(currentBlock.gameObject);
         }
     }
 }

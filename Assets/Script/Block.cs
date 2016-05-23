@@ -3,12 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-public enum BLOCKTYPE { BAR, L1, L2, Z1, Z2, T, SQUARE };
+public enum BLOCKTYPE { BAR, L, Z, T, SQUARE };
 public class Block : MonoBehaviour
 {
     public CubeInfo cubePrefabs;
     public BLOCKTYPE type;
-    public  float deltaTime;
+    public float deltaTime;
+    public bool flip;
     public CubeIndex Anchor
     {
         get { return anchor; }
@@ -44,21 +45,68 @@ public class Block : MonoBehaviour
     {
 
     }
+    void addToCubes(CubeInfo instance)
+    {
+        instance.transform.parent = gameObject.transform;
+        instance.transform.localPosition = new Vector3(0, instance.index.row, instance.index.col);
+        cubes.Add(instance);
+    }
+    CubeInfo initNewCube(int row, int col)
+    {
+        CubeInfo instance = Instantiate(cubePrefabs, Vector3.zero, Quaternion.identity) as CubeInfo;
+        instance.index = new CubeIndex(row, col);
+        return instance;
+    }
+    void initBlockByString(string[] blockString)
+    {
+        height = blockString.Length;
+        width = blockString[0].Length;
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                if (blockString[i][j] == '*')
+                {
+                    addToCubes(initNewCube(i, j));
+                }
+            }
+        }
+    }
     void initBLock()
     {
         cubes.Clear();
+        string[] Bar = new string[] { "*****" };
+        string[] L = new string[] { "*--",
+                                    "***"
+        };
+        string[] Z = new string[] { "**-",
+                                    "-**"
+        };
+        string[] T = new string[] { "***",
+                                    "-*-"
+        };
+        string[] Square = new string[] { "**",
+                                         "**"
+        };
         if (type == BLOCKTYPE.BAR)
         {
-            height = 1;
-            width = 4;
-            for (int i = 0; i < 4; i++)
-            {
-                CubeInfo instance = Instantiate(cubePrefabs, Vector3.zero, Quaternion.identity) as CubeInfo;
-                instance.index = new CubeIndex(0, i);
-                instance.transform.parent = gameObject.transform;
-                instance.transform.localPosition = new Vector3(0, instance.index.row, instance.index.col);
-                cubes.Add(instance);
-            }
+            initBlockByString(Bar);
+        }
+        else if (type == BLOCKTYPE.L)
+        {
+            initBlockByString(L);
+        }
+        else if (type == BLOCKTYPE.Z)
+        {
+            initBlockByString(Z);
+        }
+        else if (type == BLOCKTYPE.T)
+        {
+            initBlockByString(T);
+        }
+        else if (type == BLOCKTYPE.SQUARE)
+        {
+            initBlockByString(Square);
         }
     }
 
@@ -76,34 +124,35 @@ public class Block : MonoBehaviour
     {
         if (highestCols.Count == 0)
         {
-            return;
+            throw new Exception("highest cols is zero");
         }
         int i = 0;
-        int minDistance = Int32.MaxValue; CubeIndex minIndex = null;
+        int minDistance = Int32.MaxValue; CubeIndex minIndex = null; int stopRow = 0;
         foreach (var highestPos in highestCols)
         {
             CubeIndex index = getLowestCubeIndexInRow(i);
-            var distance = index.row - highestPos;
+            int row = anchor.row + index.row;
+            var distance = row - highestPos;
             if (distance < minDistance)
             {
                 minDistance = distance;
                 minIndex = index;
+                stopRow = highestPos + 1;
             }
             i++;
         }
         //
-        stopIndex = new CubeIndex(minIndex.row + minDistance, 0);
-        Debug.Log(stopIndex);
+        stopIndex = new CubeIndex(stopRow , anchor.col);
     }
     public CubeIndex getLowestCubeIndexInRow(int col)
     {
-        int maxIndex = Int32.MinValue;
+        int lowest = Int32.MaxValue;
         CubeIndex result = null;
         foreach (var cube in cubes)
         {
-            if (cube.index.col == col && maxIndex < cube.index.row)
+            if (cube.index.col == col && lowest > cube.index.row)
             {
-                maxIndex = cube.index.row;
+                lowest = cube.index.row;
                 result = cube.index;
             }
         }
@@ -131,7 +180,6 @@ public class Block : MonoBehaviour
     void Awake()
     {
         cubes = new List<CubeInfo>();
-        type = BLOCKTYPE.BAR;
         initBLock();
         currentTime = 0.0f;
     }
@@ -143,7 +191,6 @@ public class Block : MonoBehaviour
         {
             anchor.row--;
             gameObject.transform.position -= Vector3.up;
-            Debug.Log(anchor.row);
         }
     }
     void Update()
