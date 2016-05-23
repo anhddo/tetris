@@ -39,16 +39,12 @@ public class BlockBoard : MonoBehaviour
     }
     public void addBlockToBoard(Block block)
     {
-        Debug.Log("add BlockBoard");
-        Debug.Log(isFalling);
         if (!isFalling)
         {
             currentBlock = block;
             isFalling = true;
             List<int> cols = block.getListBlockCols();
-            Debug.Log(cols.Count);
             List<int> highests = getHighestCubeInCols(cols);
-            Debug.Log(highests.Count);
             block.calcStopPosition(highests);
         }
         else
@@ -63,13 +59,9 @@ public class BlockBoard : MonoBehaviour
     }
     void Update()
     {
-        if (isFalling)
-        {
-            currentBlock.transform.Translate(-Vector3.up * fallSpeed);
-        }
         if (currentBlock!=null && currentBlock.stopFalling())
         {
-
+            isFalling = false;
         }
     }
 }

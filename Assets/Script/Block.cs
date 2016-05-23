@@ -3,11 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-public enum BLOCKTYPE { BAR,L1, L2, Z1, Z2, T,  SQUARE };
+public enum BLOCKTYPE { BAR, L1, L2, Z1, Z2, T, SQUARE };
 public class Block : MonoBehaviour
 {
     public CubeInfo cubePrefabs;
     public BLOCKTYPE type;
+    public  float deltaTime;
     public CubeIndex Anchor
     {
         get { return anchor; }
@@ -29,6 +30,8 @@ public class Block : MonoBehaviour
     int rotationAngle;
     List<CubeInfo> cubes;
     CubeIndex stopIndex;
+    private float currentTime;
+
     public CubeIndex getStopIndex()
     {
         return stopIndex;
@@ -89,7 +92,6 @@ public class Block : MonoBehaviour
             i++;
         }
         //
-        Debug.Log("calcStop");
         stopIndex = new CubeIndex(minIndex.row + minDistance, 0);
     }
     public CubeIndex getLowestCubeIndexInRow(int col)
@@ -98,8 +100,6 @@ public class Block : MonoBehaviour
         CubeIndex result = null;
         foreach (var cube in cubes)
         {
-            Debug.Log(cube);
-            Debug.Log(cube.index);
             if (cube.index.col == col && maxIndex < cube.index.row)
             {
                 maxIndex = cube.index.row;
@@ -132,10 +132,26 @@ public class Block : MonoBehaviour
         cubes = new List<CubeInfo>();
         type = BLOCKTYPE.BAR;
         initBLock();
+        currentTime = 0.0f;
     }
 
     // Update is called once per frame
+    void moveToward()
+    {
+        if (!stopFalling())
+        {
+            anchor.row++;
+            gameObject.transform.position -= Vector3.up;
+        }
+    }
     void Update()
     {
+        Debug.Log(Time.time);
+        Debug.Log(currentTime+deltaTime);
+        if (Time.time > currentTime + deltaTime)
+        {
+            currentTime = Time.time;
+            moveToward();
+        }
     }
 }
