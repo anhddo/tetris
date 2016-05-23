@@ -52,7 +52,7 @@ public class Block : MonoBehaviour
     {
         foreach (var cube in cubes)
         {
-            cube.index = new CubeIndex(cube.index.col, height - 1 - cube.index.row);
+            changeCubeIndex(cube, cube.index.col, height - 1 - cube.index.row);
         }
 
         var temp = width;
@@ -64,20 +64,17 @@ public class Block : MonoBehaviour
 
 
 
-    void changeCubeIndex()
+    void changeCubeIndex(CubeInfo cube, int row, int col)
     {
-
-    }
-    void addToCubes(CubeInfo instance)
-    {
-        instance.transform.parent = gameObject.transform;
-        instance.transform.localPosition = new Vector3(0, instance.index.row, instance.index.col);
-        cubes.Add(instance);
+        cube.index = new CubeIndex(row, col);
+        cube.transform.parent = gameObject.transform;
+        cube.transform.localPosition = new Vector3(0, cube.index.row, cube.index.col);
     }
     CubeInfo initNewCube(int row, int col)
     {
         CubeInfo instance = Instantiate(cubePrefabs, Vector3.zero, Quaternion.identity) as CubeInfo;
-        instance.index = new CubeIndex(row, col);
+        changeCubeIndex(instance, row, col);
+        cubes.Add(instance);
         return instance;
     }
     void initBlockByString(string[] blockString)
@@ -90,7 +87,7 @@ public class Block : MonoBehaviour
             {
                 if (blockString[i][j] == '*')
                 {
-                    addToCubes(initNewCube(i, j));
+                    cubes.Add(initNewCube(i, j));
                 }
             }
         }
