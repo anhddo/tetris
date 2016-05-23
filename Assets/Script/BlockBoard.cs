@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class BlockBoard : MonoBehaviour
 {
@@ -14,23 +15,50 @@ public class BlockBoard : MonoBehaviour
     {
         cubes = new List<CubeInfo>();
         isFalling = false;
+        currentBlock = null;
     }
-    public List<Vector2> getFullRow()
+    public int getHighestCubeInCol(int col)
     {
-        return null;
+        int maxHeight = Int32.MinValue;
+        foreach (var cube in cubes)
+        {
+            if (cube.index.col == col && maxHeight < cube.index.row)
+                maxHeight = cube.index.row;
+        }
+        return maxHeight;
     }
-    public List<int > getHighestCubeInCol(int col)
+
+    public List<int> getHighestCubeInCols(List<int> cols)
     {
-        return null;
+        List<int> result = new List<int>();
+        foreach (var col in cols)
+        {
+            result.Add(getHighestCubeInCol(col));
+        }
+        return result;
     }
     public void addBlockToBoard(Block block)
     {
+        Debug.Log("add BlockBoard");
+        Debug.Log(isFalling);
         if (!isFalling)
         {
             currentBlock = block;
             isFalling = true;
             List<int> cols = block.getListBlockCols();
-            block.calcStopPosition();
+            Debug.Log(cols.Count);
+            List<int> highests = getHighestCubeInCols(cols);
+            Debug.Log(highests.Count);
+            block.calcStopPosition(highests);
+        }
+        else
+        {
+            CubeIndex stopIndex = block.getStopIndex();
+            List<CubeInfo> blockCubes = block.getCubes();
+            foreach (var blockCube in blockCubes)
+            {
+                blockCube.index = new CubeIndex(stopIndex.row + blockCube.index.row, stopIndex.col + blockCube.index.col);
+            }
         }
     }
     void Update()
@@ -39,9 +67,9 @@ public class BlockBoard : MonoBehaviour
         {
             currentBlock.transform.Translate(-Vector3.up * fallSpeed);
         }
-        if (currentBlock.stopFalling())
+        if (currentBlock!=null && currentBlock.stopFalling())
         {
-            
+
         }
     }
 }

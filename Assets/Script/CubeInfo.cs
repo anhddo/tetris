@@ -7,6 +7,10 @@ public class CubeIndex
     {
         row = r; col = c;
     }
+    public override string ToString()
+    {
+        return "CUBE INDEX: " + row + "," + col;
+    }
 }
 public class CubeInfo : MonoBehaviour
 {

@@ -16,7 +16,8 @@ public class GameController : MonoBehaviour {
         if ( Input.GetKeyDown(KeyCode.Space) )
         {
             Block block = Instantiate(blockPrefabs, Vector3.zero, Quaternion.identity) as Block;
-            block.Anchor = new Vector2(initHeight, 3);
+            Debug.Log(block.getWidth());
+            block.Anchor = new CubeIndex(initHeight, 3);
             blockBoard.addBlockToBoard(block);
         }
 	
