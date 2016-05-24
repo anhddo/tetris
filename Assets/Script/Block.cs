@@ -16,7 +16,8 @@ public class Block : MonoBehaviour
         set
         {
             anchor = value;
-            gameObject.transform.position = new Vector3(0, anchor.row, anchor.col);
+            if (cubePrefabs != null)
+                gameObject.transform.position = new Vector3(0, anchor.row, anchor.col);
         }
     }
 
@@ -40,6 +41,10 @@ public class Block : MonoBehaviour
     CubeIndex stopIndex;
     private float currentTime;
 
+    public Block()
+    {
+        cubes = new List<CubeInfo>();
+    }
     public CubeIndex getStopIndex()
     {
         return stopIndex;
@@ -50,20 +55,10 @@ public class Block : MonoBehaviour
     }
     public void rotate()
     {
-        Debug.Log(cubes.Count);
 
         foreach (var cube in cubes)
         {
-            Debug.Log(cube.index);
-        }
-        foreach (var cube in cubes)
-        {
-            changeCubeIndex(cube, cube.index.col, height - 1 - cube.index.row);
-        }
-        Debug.Log("-----------");
-        foreach (var cube in cubes)
-        {
-            Debug.Log(cube.index);
+            changeCubeIndex(cube, width - 1 - cube.index.col, cube.index.row);
         }
 
         var temp = width;
@@ -76,35 +71,42 @@ public class Block : MonoBehaviour
     void changeCubeIndex(CubeInfo cube, int row, int col)
     {
         cube.index = new CubeIndex(row, col);
-        cube.transform.parent = gameObject.transform;
-        cube.transform.localPosition = new Vector3(0, row, col);
+        //if prefab is null, it's used for testing
+        if (cubePrefabs != null)
+        {
+            cube.transform.parent = gameObject.transform;
+            cube.transform.localPosition = new Vector3(0, row, col);
+        }
     }
     CubeInfo initNewCube(int row, int col)
     {
-        CubeInfo instance = Instantiate(cubePrefabs, Vector3.zero, Quaternion.identity) as CubeInfo;
+        CubeInfo instance = null;
+        //for testing
+        if (cubePrefabs == null)
+            instance = new CubeInfo();
+        //
+        //for rendering
+        else
+            instance = Instantiate(cubePrefabs, Vector3.zero, Quaternion.identity) as CubeInfo;
         changeCubeIndex(instance, row, col);
         return instance;
     }
     void initBlockByString(string[] blockString)
     {
-        Debug.Log(blockString);
         height = blockString.Length;
         width = blockString[0].Length;
-        Debug.Log(height);
-        Debug.Log(width);
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
             {
                 if (blockString[i][j] == '*')
                 {
-                    Debug.Log("*");
                     cubes.Add(initNewCube(i, j));
                 }
             }
         }
     }
-    void initBLock()
+    public void initBlock()
     {
         cubes.Clear();
         string[] Bar = new string[] { "****" };
@@ -161,12 +163,22 @@ public class Block : MonoBehaviour
         {
             Anchor = new CubeIndex(anchor.row, anchor.col + 1);
         }
+        else if (v.Equals("Ground"))
+        {
+            Anchor = stopIndex;
+        }
         calcStopPosition();
     }
     public void calcStopPosition()
     {
         List<int> cols = getListBlockCols();
         List<int> highestColsInBoard = blockBoard.getHighestCubeInCols(cols);
+        string a = "";
+        foreach (var item in highestColsInBoard)
+        {
+            a = a + item + " ";
+        }
+        Debug.Log(a);
         if (highestColsInBoard.Count == 0)
         {
             throw new Exception("highest cols is zero");
@@ -176,19 +188,18 @@ public class Block : MonoBehaviour
         foreach (var highestPos in highestColsInBoard)
         {
             CubeIndex index = getLowestCubeIndexInRow(i);
-            //Debug.Log(anchor);
-            //Debug.Log(index);
             int row = anchor.row + index.row;
             var distance = row - highestPos;
             if (distance < minDistance)
             {
                 minDistance = distance;
                 minIndex = index;
-                stopRow = highestPos + 1;
+                stopRow = highestPos+1-index.row;
             }
             i++;
         }
-        //
+
+        Debug.Log(stopRow);
         stopIndex = new CubeIndex(stopRow, anchor.col);
     }
     public CubeIndex getLowestCubeIndexInRow(int col)
@@ -228,8 +239,8 @@ public class Block : MonoBehaviour
     {
         cubes = new List<CubeInfo>();
         currentTime = 0.0f;
-        //initTypeRandom();
-        initBLock();
+        initTypeRandom();
+        initBlock();
     }
 
     public void initTypeRandom()
@@ -253,7 +264,6 @@ public class Block : MonoBehaviour
         {
             currentTime = Time.time;
             moveToward();
-            Debug.Log(cubes.Count);
         }
     }
 }

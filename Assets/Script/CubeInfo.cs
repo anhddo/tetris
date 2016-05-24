@@ -11,6 +11,15 @@ public class CubeIndex
     {
         return "CUBE INDEX: " + row + "," + col;
     }
+	public override int GetHashCode()
+	{
+		return 0;
+	}
+    public override bool Equals(object obj)
+    {
+        var o = obj as CubeIndex;
+        return o.row == row && o.col == col;
+    }
 }
 public class CubeInfo : MonoBehaviour
 {

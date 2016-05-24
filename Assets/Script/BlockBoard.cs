@@ -7,12 +7,18 @@ public class BlockBoard : MonoBehaviour
 {
     public float fallSpeed;
     public int width, height;
-    public Block blockPrefabs;
+	public Block blockPrefabs;
+    public Block CurrentBlock
+    {
+        get { return currentBlock; }
+    }
+
 
     private Block currentBlock;
     private List<CubeInfo> cubes;
     private bool isFalling;
-    void Start()
+
+    public void Start()
     {
         cubes = new List<CubeInfo>();
         isFalling = false;
@@ -26,7 +32,7 @@ public class BlockBoard : MonoBehaviour
 
     public int getHighestCubeInCol(int col)
     {
-        int maxHeight = 0;
+        int maxHeight = -1;
         foreach (var cube in cubes)
         {
             if (cube.index.col == col && maxHeight < cube.index.row)
@@ -37,13 +43,12 @@ public class BlockBoard : MonoBehaviour
 
     public void rotateBlock()
     {
-        Debug.Log(currentBlock.getCubes().Count);
         currentBlock.rotate();
     }
 
     public void moveBlockToTheGround()
     {
-        //todo
+        currentBlock.move("Ground");
     }
 
     public void moveFallingBlock(string v)
@@ -66,22 +71,22 @@ public class BlockBoard : MonoBehaviour
         if (canAddNewBlock())
         {
             Block block = Instantiate(blockPrefabs, Vector3.zero, Quaternion.identity) as Block;
-            block.setReferenceBLockBoard(this);
             addBlockToBoard(block);
         }
     }
 
-    void addBlockToBoard(Block block)
+    public void addBlockToBoard(Block block)
     {
         if (!isFalling)
         {
             currentBlock = block;
+            block.setReferenceBLockBoard(this);
             block.Anchor = new CubeIndex(height, width / 2);
             block.calcStopPosition();
             isFalling = true;
         }
     }
-    void Update()
+    public void Update()
     {
         if (currentBlock != null && currentBlock.stopFalling())
         {
@@ -92,8 +97,10 @@ public class BlockBoard : MonoBehaviour
                 blockCube.index.row += stopIndex.row; blockCube.index.col += stopIndex.col;
                 cubes.Add(blockCube);
             }
-            currentBlock.transform.DetachChildren();
-            Destroy(currentBlock.gameObject);
+			if (currentBlock.cubePrefabs != null) {
+				currentBlock.transform.DetachChildren ();
+				Destroy (currentBlock.gameObject);
+			}
         }
     }
 }
