@@ -37,6 +37,7 @@ public class BlockBoard : MonoBehaviour
 
     public void rotateBlock()
     {
+        Debug.Log(currentBlock.getCubes().Count);
         currentBlock.rotate();
     }
 

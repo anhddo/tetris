@@ -50,9 +50,20 @@ public class Block : MonoBehaviour
     }
     public void rotate()
     {
+        Debug.Log(cubes.Count);
+
+        foreach (var cube in cubes)
+        {
+            Debug.Log(cube.index);
+        }
         foreach (var cube in cubes)
         {
             changeCubeIndex(cube, cube.index.col, height - 1 - cube.index.row);
+        }
+        Debug.Log("-----------");
+        foreach (var cube in cubes)
+        {
+            Debug.Log(cube.index);
         }
 
         var temp = width;
@@ -62,31 +73,32 @@ public class Block : MonoBehaviour
         calcStopPosition();
     }
 
-
-
     void changeCubeIndex(CubeInfo cube, int row, int col)
     {
         cube.index = new CubeIndex(row, col);
         cube.transform.parent = gameObject.transform;
-        cube.transform.localPosition = new Vector3(0, cube.index.row, cube.index.col);
+        cube.transform.localPosition = new Vector3(0, row, col);
     }
     CubeInfo initNewCube(int row, int col)
     {
         CubeInfo instance = Instantiate(cubePrefabs, Vector3.zero, Quaternion.identity) as CubeInfo;
         changeCubeIndex(instance, row, col);
-        cubes.Add(instance);
         return instance;
     }
     void initBlockByString(string[] blockString)
     {
+        Debug.Log(blockString);
         height = blockString.Length;
         width = blockString[0].Length;
+        Debug.Log(height);
+        Debug.Log(width);
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
             {
                 if (blockString[i][j] == '*')
                 {
+                    Debug.Log("*");
                     cubes.Add(initNewCube(i, j));
                 }
             }
@@ -95,7 +107,7 @@ public class Block : MonoBehaviour
     void initBLock()
     {
         cubes.Clear();
-        string[] Bar = new string[] { "*****" };
+        string[] Bar = new string[] { "****" };
         string[] L = new string[] { "*--",
                                     "***"
         };
@@ -164,6 +176,8 @@ public class Block : MonoBehaviour
         foreach (var highestPos in highestColsInBoard)
         {
             CubeIndex index = getLowestCubeIndexInRow(i);
+            //Debug.Log(anchor);
+            //Debug.Log(index);
             int row = anchor.row + index.row;
             var distance = row - highestPos;
             if (distance < minDistance)
@@ -214,7 +228,7 @@ public class Block : MonoBehaviour
     {
         cubes = new List<CubeInfo>();
         currentTime = 0.0f;
-        initTypeRandom();
+        //initTypeRandom();
         initBLock();
     }
 
@@ -239,6 +253,7 @@ public class Block : MonoBehaviour
         {
             currentTime = Time.time;
             moveToward();
+            Debug.Log(cubes.Count);
         }
     }
 }
