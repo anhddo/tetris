@@ -5,7 +5,6 @@ using System;
 
 public class BlockBoard : MonoBehaviour
 {
-    public float fallSpeed;
     public int width, height;
     public BlockShapes blockShapes;
     public Block CurrentBlock
@@ -33,11 +32,7 @@ public class BlockBoard : MonoBehaviour
     public int getHighestCubeInCol(int col)
     {
         int maxHeight = -1;
-        foreach (var cube in cubes)
-        {
-            if (cube.index.col == col && maxHeight < cube.index.row)
-                maxHeight = cube.index.row;
-        }
+        cubes.FindAll(x => x.index.col == col).ConvertAll(x => x.index).ForEach(x => maxHeight = (maxHeight > x.row) ? maxHeight : x.row);
         return maxHeight;
     }
 
@@ -59,11 +54,7 @@ public class BlockBoard : MonoBehaviour
     public List<int> getHighestCubeInCols(List<int> cols)
     {
         List<int> result = new List<int>();
-        foreach (var col in cols)
-        {
-            result.Add(getHighestCubeInCol(col));
-        }
-
+        cols.ForEach(col => result.Add(getHighestCubeInCol(col)));
         if (result.Count == 0)
         {
             throw new Exception("highest cols is zero");

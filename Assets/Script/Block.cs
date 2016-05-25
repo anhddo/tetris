@@ -14,7 +14,7 @@ public class Block : MonoBehaviour
     CubeIndex anchor;
 
     public BLOCKTYPE type;
-    public float deltaTime;
+    public float fallSpeed;
     public int Width
     {
         get { return width; }
@@ -192,7 +192,7 @@ public class Block : MonoBehaviour
     }
     void Update()
     {
-        if (Time.time > currentTime + deltaTime)
+        if (Time.time > currentTime + fallSpeed)
         {
             currentTime = Time.time;
             moveToward();
