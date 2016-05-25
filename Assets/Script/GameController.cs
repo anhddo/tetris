@@ -19,11 +19,11 @@ public class GameController : MonoBehaviour
         if (Input.anyKey && Time.time > currentTime + keyPressTimeDelay)
         {
             currentTime = Time.time;
-            if (Input.GetKey(KeyCode.DownArrow))
+            if (Input.GetKeyDown(KeyCode.DownArrow))
             {
                 blockBoard.moveBlockToTheGround();
             }
-            else if (Input.GetKey(KeyCode.UpArrow))
+            else if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 blockBoard.rotateBlock();
             }

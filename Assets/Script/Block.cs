@@ -6,40 +6,48 @@ using System;
 public enum BLOCKTYPE { BAR, L, Z, T, SQUARE };
 public class Block : MonoBehaviour
 {
-    public CubeInfo cubePrefabs;
+    BlockBoard blockBoard;
+    int width, height;
+    List<CubeInfo> cubes;
+    CubeIndex stopIndex;
+    float currentTime;
+    CubeIndex anchor;
+
     public BLOCKTYPE type;
     public float deltaTime;
-    public bool flip;
+    public int Width
+    {
+        get { return width; }
+        set { width = value; }
+    }
+    public int Height
+    {
+        get { return height; }
+        set { height = value; }
+    }
+    public List<CubeInfo> Cubes
+    {
+        get { return cubes; }
+    }
     public CubeIndex Anchor
     {
         get { return anchor; }
         set
         {
             anchor = value;
-            if (cubePrefabs != null)
-                gameObject.transform.position = new Vector3(0, anchor.row, anchor.col);
+            transform.position = new Vector3(0, anchor.row, anchor.col);
         }
     }
-
-    private BlockBoard blockBoard;
-
-    public void setReferenceBLockBoard(BlockBoard blockBoard)
+    public BlockBoard BlockBoard
     {
-        this.blockBoard = blockBoard;
+        set { blockBoard = value; }
     }
-
-    CubeIndex anchor;
 
     public int getWidth()
     {
         return width;
     }
 
-    int width, height;
-    int rotationAngle;
-    List<CubeInfo> cubes;
-    CubeIndex stopIndex;
-    private float currentTime;
 
     public Block()
     {
@@ -58,7 +66,7 @@ public class Block : MonoBehaviour
 
         foreach (var cube in cubes)
         {
-            changeCubeIndex(cube, width - 1 - cube.index.col, cube.index.row);
+            cube.changeCubeIndex(width - 1 - cube.index.col, cube.index.row);
         }
 
         var temp = width;
@@ -68,81 +76,6 @@ public class Block : MonoBehaviour
         calcStopPosition();
     }
 
-    void changeCubeIndex(CubeInfo cube, int row, int col)
-    {
-        cube.index = new CubeIndex(row, col);
-        //if prefab is null, it's used for testing
-        if (cubePrefabs != null)
-        {
-            cube.transform.parent = gameObject.transform;
-            cube.transform.localPosition = new Vector3(0, row, col);
-        }
-    }
-    CubeInfo initNewCube(int row, int col)
-    {
-        CubeInfo instance = null;
-        //for testing
-        if (cubePrefabs == null)
-            instance = new CubeInfo();
-        //
-        //for rendering
-        else
-            instance = Instantiate(cubePrefabs, Vector3.zero, Quaternion.identity) as CubeInfo;
-        changeCubeIndex(instance, row, col);
-        return instance;
-    }
-    void initBlockByString(string[] blockString)
-    {
-        height = blockString.Length;
-        width = blockString[0].Length;
-        for (int i = 0; i < height; i++)
-        {
-            for (int j = 0; j < width; j++)
-            {
-                if (blockString[i][j] == '*')
-                {
-                    cubes.Add(initNewCube(i, j));
-                }
-            }
-        }
-    }
-    public void initBlock()
-    {
-        cubes.Clear();
-        string[] Bar = new string[] { "****" };
-        string[] L = new string[] { "*--",
-                                    "***"
-        };
-        string[] Z = new string[] { "**-",
-                                    "-**"
-        };
-        string[] T = new string[] { "***",
-                                    "-*-"
-        };
-        string[] Square = new string[] { "**",
-                                         "**"
-        };
-        if (type == BLOCKTYPE.BAR)
-        {
-            initBlockByString(Bar);
-        }
-        else if (type == BLOCKTYPE.L)
-        {
-            initBlockByString(L);
-        }
-        else if (type == BLOCKTYPE.Z)
-        {
-            initBlockByString(Z);
-        }
-        else if (type == BLOCKTYPE.T)
-        {
-            initBlockByString(T);
-        }
-        else if (type == BLOCKTYPE.SQUARE)
-        {
-            initBlockByString(Square);
-        }
-    }
 
     public List<int> getListBlockCols()
     {
@@ -151,17 +84,27 @@ public class Block : MonoBehaviour
         {
             result.Add(anchor.col + i);
         }
+        if (result.Count == 0)
+        {
+            throw new Exception("No cols in block");
+        }
         return result;
+    }
+    void moveCol(int x)
+    {
+        CubeIndex newPos = new CubeIndex(anchor.row, anchor.col + x);
+        if (inBlockBoard(newPos))
+            Anchor = newPos;
     }
     public void move(string v)
     {
         if (v.Equals("Left"))
         {
-            Anchor = new CubeIndex(anchor.row, anchor.col - 1);
+            moveCol(-1);
         }
         else if (v.Equals("Right"))
         {
-            Anchor = new CubeIndex(anchor.row, anchor.col + 1);
+            moveCol(1);
         }
         else if (v.Equals("Ground"))
         {
@@ -169,38 +112,37 @@ public class Block : MonoBehaviour
         }
         calcStopPosition();
     }
+
+    private bool inBlockBoard(CubeIndex newPos)
+    {
+        return newPos.col >= 0 && newPos.col <= blockBoard.width - width;
+    }
+
+    //distance between peek of ground and lowest cube in the same column, return stop position(in row)
+    int findDistance(int col, int groundPeek)
+    {
+        CubeIndex index = getLowestCubeIndexInRow(col);
+        int row = anchor.row + index.row;
+        return groundPeek + 1 - index.row;
+    }
+    //find highest stop position
     public void calcStopPosition()
     {
         List<int> cols = getListBlockCols();
         List<int> highestColsInBoard = blockBoard.getHighestCubeInCols(cols);
-        string a = "";
-        foreach (var item in highestColsInBoard)
-        {
-            a = a + item + " ";
-        }
-        Debug.Log(a);
-        if (highestColsInBoard.Count == 0)
-        {
-            throw new Exception("highest cols is zero");
-        }
-        int i = 0;
-        int minDistance = Int32.MaxValue; CubeIndex minIndex = null; int stopRow = 0;
-        foreach (var highestPos in highestColsInBoard)
-        {
-            CubeIndex index = getLowestCubeIndexInRow(i);
-            int row = anchor.row + index.row;
-            var distance = row - highestPos;
-            if (distance < minDistance)
-            {
-                minDistance = distance;
-                minIndex = index;
-                stopRow = highestPos+1-index.row;
-            }
-            i++;
-        }
 
-        Debug.Log(stopRow);
-        stopIndex = new CubeIndex(stopRow, anchor.col);
+        int col = 0;
+        int highestStop = Int32.MinValue;
+        foreach (var groundPeek in highestColsInBoard)
+        {
+            var stopRow = findDistance(col, groundPeek);
+            if (highestStop < stopRow)
+            {
+                highestStop = stopRow;
+            }
+            col++;
+        }
+        stopIndex = new CubeIndex(highestStop, anchor.col);
     }
     public CubeIndex getLowestCubeIndexInRow(int col)
     {
@@ -233,22 +175,6 @@ public class Block : MonoBehaviour
         }
         return false;
     }
-
-    // Use this for initialization
-    void Awake()
-    {
-        cubes = new List<CubeInfo>();
-        currentTime = 0.0f;
-        initTypeRandom();
-        initBlock();
-    }
-
-    public void initTypeRandom()
-    {
-        var array = Enum.GetValues(typeof(BLOCKTYPE));
-        type = (BLOCKTYPE)array.GetValue(UnityEngine.Random.Range(0, array.Length - 1));
-    }
-
     // Update is called once per frame
     void moveToward()
     {
@@ -257,6 +183,12 @@ public class Block : MonoBehaviour
             anchor.row--;
             gameObject.transform.position -= Vector3.up;
         }
+    }
+    // Use this for initialization
+    void Awake()
+    {
+        cubes = new List<CubeInfo>();
+        currentTime = 0.0f;
     }
     void Update()
     {

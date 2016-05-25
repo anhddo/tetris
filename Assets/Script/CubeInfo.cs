@@ -24,4 +24,9 @@ public class CubeIndex
 public class CubeInfo : MonoBehaviour
 {
     public CubeIndex index;
+    public void changeCubeIndex(int row, int col)
+    {
+        index = new CubeIndex(row, col);
+        transform.localPosition = new Vector3(0, row, col);
+    }
 }
